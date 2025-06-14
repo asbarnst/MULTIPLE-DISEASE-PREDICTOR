@@ -12,9 +12,10 @@ st.set_page_config(
 )
 
 # Load the models
-diabetes_model = pickle.load(open(r"C:\Users\Asbar\OneDrive\Desktop\desease predictor\multiple disease prediction\diabetes_model.sav",'rb'))
-heart_disease_model = pickle.load(open(r"C:\Users\Asbar\OneDrive\Desktop\desease predictor\multiple disease prediction\heart_disease_model.sav",'rb'))
-parkinsons_model = pickle.load(open(r"C:\Users\Asbar\OneDrive\Desktop\desease predictor\multiple disease prediction\parkinsons_model.sav",'rb'))
+diabetes_model = pickle.load(open("../multiple disease prediction/diabetes_model.sav", "rb"))
+heart_disease_model = pickle.load(open("../multiple disease prediction/heart_disease_model.sav", "rb"))
+parkinsons_model = pickle.load(open("../multiple disease prediction/parkinsons_model.sav", "rb"))
+
 
 # Title of the app
 st.title("🩺 Multiple Disease Prediction System")
