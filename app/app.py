@@ -48,9 +48,7 @@ with st.sidebar:
         default_index=0
     )
 
-# ================================
-# Diabetes Prediction Page
-# ================================
+
 if selected == 'Diabetes Prediction 🩸':
     st.header('🩸 Diabetes Prediction')
 
@@ -96,9 +94,6 @@ if selected == 'Diabetes Prediction 🩸':
             diab_diagnosis = '✅ The person is not diabetic'
     st.success(diab_diagnosis)
 
-# ================================
-# Heart Disease Prediction Page
-# ================================
 if selected == 'Heart Disease Prediction ❤️':
     st.header('❤️ Heart Disease Prediction')
 
@@ -155,9 +150,7 @@ if selected == 'Heart Disease Prediction ❤️':
             heart_diagnosis = '✅ The person does not have any heart disease'
     st.success(heart_diagnosis)
 
-# ================================
-# Parkinson's Prediction Page
-# ================================
+
 if selected == 'Parkinsons Prediction 🧠':
     st.header("🧠 Parkinson's Prediction")
 
@@ -233,3 +226,4 @@ if selected == 'Parkinsons Prediction 🧠':
         else:
             parkinsons_diagnosis = "✅ The person does not have Parkinson's disease"
     st.success(parkinsons_diagnosis)
+# end of the app
