@@ -1,147 +1,230 @@
-import os
 import pickle
 import streamlit as st
-import pandas as pd
 from streamlit_option_menu import option_menu
 import plotly.graph_objects as go
+import pandas as pd
 
-# Page config
-st.set_page_config(page_title="Multiple Disease Prediction", layout="centered", page_icon="🩺")
+# Set page configuration
+st.set_page_config(
+    page_title="Multiple Disease Prediction System",
+    page_icon="🩺",
+    layout="centered"
+)
 
-# Title
+# Load the models
+diabetes_model = pickle.load(open("../TEST MODELS/diabetes_model.sav", "rb"))
+heart_disease_model = pickle.load(open("../TEST MODELS/heart_disease_model.sav", "rb"))
+parkinsons_model = pickle.load(open("../TEST MODELS/parkinsons_model.sav", "rb"))
+
+
+# Title of the app
 st.title("🩺 Multiple Disease Prediction System")
 
-# About the app
+# About the App Section
 with st.expander("ℹ️ About this App"):
-    st.markdown("""
-This application helps predict the likelihood of:
+    st.write("""
+    This application allows you to predict the likelihood of:
+    - **Diabetes**
+    - **Heart Disease**
+    - **Parkinson's Disease**
 
-- **Diabetes**
-- **Heart Disease**
-- **Parkinson's Disease**
+    Simply select the disease type, enter the required medical information, and click predict.
+    The models used are trained using supervised machine learning algorithms.
+    
+    Mohammed Asbar is a machine learning enthusiast and this app is part of his portfolio
+    """)
 
-Select the disease, enter the inputs, and hit Predict.  
-Models are trained using supervised machine learning.
-
-**Mohammed Asbar** is a machine learning enthusiast and this app is part of his professional portfolio.
-""")
-
-# Load model helper
-def load_model(model_name):
-    model_path = os.path.join("..", "multiple disease prediction", model_name)
-    try:
-        return pickle.load(open(model_path, "rb"))
-    except FileNotFoundError:
-        st.error(f"⚠️ File not found: {model_path}")
-    except Exception as e:
-        st.error(f"❌ Failed to load model: {e}")
-    return None
-
-# Load models
-diabetes_model = load_model("diabetes_model.sav")
-heart_model = load_model("heart_disease_model.sav")
-parkinsons_model = load_model("parkinsons_model.sav")
-
-# Sidebar
+# Sidebar navigation
 with st.sidebar:
-    selected = option_menu("Prediction Menu",
-        ["Diabetes 🩸", "Heart ❤️", "Parkinson's 🧠"],
-        icons=["droplet-half", "heart-pulse", "activity"],
-        default_index=0)
+    selected = option_menu(
+        'Prediction Menu',
+        ['Diabetes Prediction 🩸', 'Heart Disease Prediction ❤️', 'Parkinsons Prediction 🧠'],
+        icons=['activity', 'heart', 'person'],
+        default_index=0
+    )
 
-# =========================================
-# Diabetes Section
-# =========================================
-if selected == "Diabetes 🩸":
-    st.header("🩸 Diabetes Prediction")
+# ================================
+# Diabetes Prediction Page
+# ================================
+if selected == 'Diabetes Prediction 🩸':
+    st.header('🩸 Diabetes Prediction')
 
-    with st.form("diabetes_form"):
-        col1, col2, col3 = st.columns(3)
-        Pregnancies = col1.number_input("Pregnancies", min_value=0)
-        Glucose = col2.number_input("Glucose Level", min_value=0)
-        BloodPressure = col3.number_input("Blood Pressure", min_value=0)
-        SkinThickness = col1.number_input("Skin Thickness", min_value=0)
-        Insulin = col2.number_input("Insulin Level", min_value=0)
-        BMI = col3.number_input("BMI", min_value=0.0)
-        DPF = col1.number_input("Diabetes Pedigree Function", min_value=0.0)
-        Age = col2.number_input("Age", min_value=0)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        Pregnancies = st.text_input('Number of Pregnancies')
+    with col2:
+        Glucose = st.text_input('Glucose Level')
+    with col3:
+        BloodPressure = st.text_input('Blood Pressure value')
+    with col1:
+        SkinThickness = st.text_input('Skin Thickness value')
+    with col2:
+        Insulin = st.text_input('Insulin Level')
+    with col3:
+        BMI = st.text_input('BMI value')
+    with col1:
+        DiabetesPedigreeFunction = st.text_input('Diabetes Pedigree Function value')
+    with col2:
+        Age = st.text_input('Age of the Person')
 
-        submit = st.form_submit_button("🔎 Predict")
+    diab_diagnosis = ''
+    if st.button('🔎 Get Diabetes Test Result'):
+        feature_names = ['Pregnancies','Glucose','BloodPressure','SkinThickness',
+                        'Insulin','BMI','DiabetesPedigreeFunction','Age']
+        user_input = [Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age]
+        user_input_float = [float(x) for x in user_input]
 
-    if submit and diabetes_model:
-        inputs = [Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DPF, Age]
-        prediction = diabetes_model.predict([inputs])[0]
-        result = "⚠️ The person is diabetic" if prediction == 1 else "✅ The person is not diabetic"
-        st.success(result)
+        # Show input table
+        st.subheader("📝 Input Features Summary")
+        df = pd.DataFrame({'Feature': feature_names, 'Value': user_input_float})
+        st.table(df)
 
-        st.subheader("📝 Input Summary")
-        features = ["Pregnancies", "Glucose", "BloodPressure", "SkinThickness", "Insulin", "BMI", "DPF", "Age"]
-        st.table(pd.DataFrame({"Feature": features, "Value": inputs}))
+        # Visualization
+        st.subheader("📊 Input Visualization")
+        fig = go.Figure([go.Bar(x=feature_names, y=user_input_float)])
+        st.plotly_chart(fig, use_container_width=True)
 
-        st.subheader("📊 Visualization")
-        st.plotly_chart(go.Figure([go.Bar(x=features, y=inputs)]), use_container_width=True)
+        diab_prediction = diabetes_model.predict([user_input_float])
+        if diab_prediction[0] == 1:
+            diab_diagnosis = '⚠️ The person is diabetic'
+        else:
+            diab_diagnosis = '✅ The person is not diabetic'
+    st.success(diab_diagnosis)
 
-# =========================================
-# Heart Disease Section
-# =========================================
-elif selected == "Heart ❤️":
-    st.header("❤️ Heart Disease Prediction")
+# ================================
+# Heart Disease Prediction Page
+# ================================
+if selected == 'Heart Disease Prediction ❤️':
+    st.header('❤️ Heart Disease Prediction')
 
-    with st.form("heart_form"):
-        col1, col2, col3 = st.columns(3)
-        Age = col1.number_input("Age", 0)
-        Sex = col2.selectbox("Sex", [0, 1], format_func=lambda x: "Female" if x == 0 else "Male")
-        CP = col3.selectbox("Chest Pain Type", [0,1,2,3])
-        Trestbps = col1.number_input("Resting Blood Pressure", 0)
-        Chol = col2.number_input("Cholesterol (mg/dl)", 0)
-        FBS = col3.selectbox("Fasting Blood Sugar > 120 mg/dl", [0,1])
-        RestECG = col1.selectbox("Rest ECG (0–2)", [0,1,2])
-        Thalach = col2.number_input("Max Heart Rate", 0)
-        ExAng = col3.selectbox("Exercise Induced Angina", [0,1])
-        Oldpeak = col1.number_input("ST Depression", 0.0)
-        Slope = col2.selectbox("ST Slope (0–2)", [0,1,2])
-        CA = col3.selectbox("No. of Major Vessels (0–3)", [0,1,2,3])
-        Thal = col1.selectbox("Thal (0=Normal, 1=Fixed, 2=Reversible)", [0,1,2])
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        age = st.text_input('Age')
+    with col2:
+        sex = st.text_input('Sex')
+    with col3:
+        cp = st.text_input('Chest Pain types')
+    with col1:
+        trestbps = st.text_input('Resting Blood Pressure')
+    with col2:
+        chol = st.text_input('Serum Cholestoral in mg/dl')
+    with col3:
+        fbs = st.text_input('Fasting Blood Sugar > 120 mg/dl')
+    with col1:
+        restecg = st.text_input('Resting Electrocardiographic results')
+    with col2:
+        thalach = st.text_input('Maximum Heart Rate achieved')
+    with col3:
+        exang = st.text_input('Exercise Induced Angina')
+    with col1:
+        oldpeak = st.text_input('ST depression induced by exercise')
+    with col2:
+        slope = st.text_input('Slope of the peak exercise ST segment')
+    with col3:
+        ca = st.text_input('Major vessels colored by flourosopy')
+    with col1:
+        thal = st.text_input('thal: 0 = normal; 1 = fixed defect; 2 = reversable defect')
 
-        submit = st.form_submit_button("🔎 Predict")
+    heart_diagnosis = ''
+    if st.button('🔎 Get Heart Disease Test Result'):
+        feature_names = ['Age','Sex','CP','BP','Chol','FBS','RestECG','Thalach',
+                        'ExAng','OldPeak','Slope','CA','Thal']
+        user_input = [age, sex, cp, trestbps, chol, fbs, restecg, thalach,
+                    exang, oldpeak, slope, ca, thal]
+        user_input_float = [float(x) for x in user_input]
 
-    if submit and heart_model:
-        inputs = [Age, Sex, CP, Trestbps, Chol, FBS, RestECG, Thalach,
-                  ExAng, Oldpeak, Slope, CA, Thal]
-        prediction = heart_model.predict([inputs])[0]
-        result = "⚠️ The person has heart disease" if prediction == 1 else "✅ No heart disease detected"
-        st.success(result)
+        # Show input table
+        st.subheader("📝 Input Features Summary")
+        df = pd.DataFrame({'Feature': feature_names, 'Value': user_input_float})
+        st.table(df)
 
-        st.subheader("📝 Input Summary")
-        features = ["Age","Sex","CP","BP","Chol","FBS","RestECG","Thalach",
-                    "ExAng","OldPeak","Slope","CA","Thal"]
-        st.table(pd.DataFrame({"Feature": features, "Value": inputs}))
+        # Visualization
+        st.subheader("📊 Input Visualization")
+        fig = go.Figure([go.Bar(x=feature_names, y=user_input_float)])
+        st.plotly_chart(fig, use_container_width=True)
 
-        st.subheader("📊 Visualization")
-        st.plotly_chart(go.Figure([go.Bar(x=features, y=inputs)]), use_container_width=True)
+        heart_prediction = heart_disease_model.predict([user_input_float])
+        if heart_prediction[0] == 1:
+            heart_diagnosis = '⚠️ The person is having heart disease'
+        else:
+            heart_diagnosis = '✅ The person does not have any heart disease'
+    st.success(heart_diagnosis)
 
-# =========================================
-# Parkinson's Section
-# =========================================
-elif selected == "Parkinson's 🧠":
+# ================================
+# Parkinson's Prediction Page
+# ================================
+if selected == 'Parkinsons Prediction 🧠':
     st.header("🧠 Parkinson's Prediction")
 
-    with st.form("parkinsons_form"):
-        features = [
-            "Fo", "Fhi", "Flo", "Jitter%", "JitterAbs", "RAP", "PPQ", "DDP",
-            "Shimmer", "Shimmer_dB", "APQ3", "APQ5", "APQ", "DDA", "NHR", "HNR",
-            "RPDE", "DFA", "spread1", "spread2", "D2", "PPE"
-        ]
-        values = [st.number_input(feature, value=0.0) for feature in features]
-        submit = st.form_submit_button("🔎 Predict")
+    col1, col2, col3, col4, col5 = st.columns(5)
+    with col1:
+        fo = st.text_input('MDVP:Fo(Hz)')
+    with col2:
+        fhi = st.text_input('MDVP:Fhi(Hz)')
+    with col3:
+        flo = st.text_input('MDVP:Flo(Hz)')
+    with col4:
+        Jitter_percent = st.text_input('MDVP:Jitter(%)')
+    with col5:
+        Jitter_Abs = st.text_input('MDVP:Jitter(Abs)')
+    with col1:
+        RAP = st.text_input('MDVP:RAP')
+    with col2:
+        PPQ = st.text_input('MDVP:PPQ')
+    with col3:
+        DDP = st.text_input('Jitter:DDP')
+    with col4:
+        Shimmer = st.text_input('MDVP:Shimmer')
+    with col5:
+        Shimmer_dB = st.text_input('MDVP:Shimmer(dB)')
+    with col1:
+        APQ3 = st.text_input('Shimmer:APQ3')
+    with col2:
+        APQ5 = st.text_input('Shimmer:APQ5')
+    with col3:
+        APQ = st.text_input('MDVP:APQ')
+    with col4:
+        DDA = st.text_input('Shimmer:DDA')
+    with col5:
+        NHR = st.text_input('NHR')
+    with col1:
+        HNR = st.text_input('HNR')
+    with col2:
+        RPDE = st.text_input('RPDE')
+    with col3:
+        DFA = st.text_input('DFA')
+    with col4:
+        spread1 = st.text_input('spread1')
+    with col5:
+        spread2 = st.text_input('spread2')
+    with col1:
+        D2 = st.text_input('D2')
+    with col2:
+        PPE = st.text_input('PPE')
 
-    if submit and parkinsons_model:
-        prediction = parkinsons_model.predict([values])[0]
-        result = "⚠️ The person has Parkinson's disease" if prediction == 1 else "✅ No Parkinson's detected"
-        st.success(result)
+    parkinsons_diagnosis = ''
+    if st.button("🔎 Get Parkinson's Test Result"):
+        feature_names = ['Fo','Fhi','Flo','Jitter%','JitterAbs','RAP','PPQ','DDP',
+                        'Shimmer','Shimmer_dB','APQ3','APQ5','APQ','DDA','NHR','HNR',
+                        'RPDE','DFA','spread1','spread2','D2','PPE']
+        user_input = [fo, fhi, flo, Jitter_percent, Jitter_Abs, RAP, PPQ, DDP,
+                    Shimmer, Shimmer_dB, APQ3, APQ5, APQ, DDA, NHR, HNR,
+                    RPDE, DFA, spread1, spread2, D2, PPE]
+        user_input_float = [float(x) for x in user_input]
 
-        st.subheader("📝 Input Summary")
-        st.table(pd.DataFrame({"Feature": features, "Value": values}))
+        # Show input table
+        st.subheader("📝 Input Features Summary")
+        df = pd.DataFrame({'Feature': feature_names, 'Value': user_input_float})
+        st.table(df)
 
-        st.subheader("📊 Visualization")
-        st.plotly_chart(go.Figure([go.Bar(x=features[:10], y=values[:10])]), use_container_width=True)
+        # Visualization (only 10 features for better view)
+        st.subheader("📊 Input Visualization")
+        fig = go.Figure([go.Bar(x=feature_names[:10], y=user_input_float[:10])])
+        st.plotly_chart(fig, use_container_width=True)
+
+        parkinsons_prediction = parkinsons_model.predict([user_input_float])
+        if parkinsons_prediction[0] == 1:
+            parkinsons_diagnosis = "⚠️ The person has Parkinson's disease"
+        else:
+            parkinsons_diagnosis = "✅ The person does not have Parkinson's disease"
+    st.success(parkinsons_diagnosis)
