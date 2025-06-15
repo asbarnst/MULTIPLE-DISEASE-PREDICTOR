@@ -5,41 +5,43 @@ import plotly.graph_objects as go
 import pandas as pd
 import os
 
+# Get current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
-
 
 # Construct absolute paths for model files
 diabetes_model_path = os.path.join(current_dir, 'diabetes_model.sav')
 heart_disease_model_path = os.path.join(current_dir, 'heart_disease_model.sav')
 parkinsons_model_path = os.path.join(current_dir, 'parkinsons_model.sav')
 
+# ✅ Load the models
+diabetes_model = pickle.load(open(diabetes_model_path, 'rb'))
+heart_disease_model = pickle.load(open(heart_disease_model_path, 'rb'))
+parkinsons_model = pickle.load(open(parkinsons_model_path, 'rb'))
 
-# Set page configuration
+# Set page config
 st.set_page_config(
     page_title="Multiple Disease Prediction System",
     page_icon="🩺",
     layout="centered"
 )
 
-
-# Title of the app
+# Title
 st.title("🩺 Multiple Disease Prediction System")
 
-# About the App Section
+# About
 with st.expander("ℹ️ About this App"):
     st.write("""
     This application allows you to predict the likelihood of:
     - **Diabetes**
     - **Heart Disease**
     - **Parkinson's Disease**
-
-    Simply select the disease type, enter the required medical information, and click predict.
-    The models used are trained using supervised machine learning algorithms.
     
-    Mohammed Asbar is a machine learning enthusiast and this app is part of his portfolio
+    Simply select the disease type, enter the required medical information, and click predict.
+    
+    Mohammed Asbar is a machine learning enthusiast and this app is part of his portfolio.
     """)
 
-# Sidebar navigation
+# Sidebar
 with st.sidebar:
     selected = option_menu(
         'Prediction Menu',
@@ -48,7 +50,7 @@ with st.sidebar:
         default_index=0
     )
 
-
+# Diabetes Prediction
 if selected == 'Diabetes Prediction 🩸':
     st.header('🩸 Diabetes Prediction')
 
@@ -77,12 +79,10 @@ if selected == 'Diabetes Prediction 🩸':
         user_input = [Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age]
         user_input_float = [float(x) for x in user_input]
 
-        # Show input table
         st.subheader("📝 Input Features Summary")
         df = pd.DataFrame({'Feature': feature_names, 'Value': user_input_float})
         st.table(df)
 
-        # Visualization
         st.subheader("📊 Input Visualization")
         fig = go.Figure([go.Bar(x=feature_names, y=user_input_float)])
         st.plotly_chart(fig, use_container_width=True)
@@ -94,6 +94,7 @@ if selected == 'Diabetes Prediction 🩸':
             diab_diagnosis = '✅ The person is not diabetic'
     st.success(diab_diagnosis)
 
+# Heart Disease Prediction
 if selected == 'Heart Disease Prediction ❤️':
     st.header('❤️ Heart Disease Prediction')
 
@@ -133,12 +134,10 @@ if selected == 'Heart Disease Prediction ❤️':
                     exang, oldpeak, slope, ca, thal]
         user_input_float = [float(x) for x in user_input]
 
-        # Show input table
         st.subheader("📝 Input Features Summary")
         df = pd.DataFrame({'Feature': feature_names, 'Value': user_input_float})
         st.table(df)
 
-        # Visualization
         st.subheader("📊 Input Visualization")
         fig = go.Figure([go.Bar(x=feature_names, y=user_input_float)])
         st.plotly_chart(fig, use_container_width=True)
@@ -150,7 +149,7 @@ if selected == 'Heart Disease Prediction ❤️':
             heart_diagnosis = '✅ The person does not have any heart disease'
     st.success(heart_diagnosis)
 
-
+# Parkinsons Prediction
 if selected == 'Parkinsons Prediction 🧠':
     st.header("🧠 Parkinson's Prediction")
 
@@ -210,12 +209,10 @@ if selected == 'Parkinsons Prediction 🧠':
                     RPDE, DFA, spread1, spread2, D2, PPE]
         user_input_float = [float(x) for x in user_input]
 
-        # Show input table
         st.subheader("📝 Input Features Summary")
         df = pd.DataFrame({'Feature': feature_names, 'Value': user_input_float})
         st.table(df)
 
-        # Visualization (only 10 features for better view)
         st.subheader("📊 Input Visualization")
         fig = go.Figure([go.Bar(x=feature_names[:10], y=user_input_float[:10])])
         st.plotly_chart(fig, use_container_width=True)
@@ -226,4 +223,3 @@ if selected == 'Parkinsons Prediction 🧠':
         else:
             parkinsons_diagnosis = "✅ The person does not have Parkinson's disease"
     st.success(parkinsons_diagnosis)
-# end of the app
