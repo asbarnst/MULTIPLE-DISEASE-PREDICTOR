@@ -1,6 +1,22 @@
+import os
 import pickle
 import streamlit as st
 from streamlit_option_menu import option_menu
+
+# Get current directory of this app.py file
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct absolute paths for model files
+diabetes_model_path = os.path.join(current_dir, 'diabetes_model.sav')
+heart_disease_model_path = os.path.join(current_dir, 'heart_disease_model.sav')
+parkinsons_model_path = os.path.join(current_dir, 'parkinsons_model.sav')
+
+# Load the models safely
+diabetes_model = pickle.load(open(diabetes_model_path, 'rb'))
+heart_disease_model = pickle.load(open(heart_disease_model_path, 'rb'))
+parkinsons_model = pickle.load(open(parkinsons_model_path, 'rb'))
+
+# Add your streamlit prediction code here.
 
 # Set Streamlit page configuration
 st.set_page_config(
@@ -9,10 +25,6 @@ st.set_page_config(
     layout="centered"
 )
 
-# Load the saved models
-diabetes_model = pickle.load(open("diabetes_model.sav", "rb"))
-heart_disease_model = pickle.load(open("heart_disease_model.sav", "rb"))
-parkinsons_model = pickle.load(open("parkinsons_model.sav", "rb"))
 
 # Sidebar menu
 with st.sidebar:
@@ -67,7 +79,7 @@ if selected == "Heart Disease Prediction":
 
     if st.button("Heart Disease Test Result"):
         heart_prediction = heart_disease_model.predict([[age, sex, cp, trestbps, chol, fbs, restecg,
-                                                          thalach, exang, oldpeak, slope, ca, thal]])
+                                                        thalach, exang, oldpeak, slope, ca, thal]])
         if heart_prediction[0] == 1:
             st.error("The person has Heart Disease")
         else:
